@@ -1,57 +1,131 @@
-# React + TypeScript + Vite
+# 暗影突击
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+一款基于浏览器的横版卷轴射击游戏，灵感来自经典魂斗罗。玩家操控特种兵在充满敌人和陷阱的战场中冲锋陷阵，收集武器升级，击败 Boss 通关。
 
-Currently, two official plugins are available:
+## 快速开始
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 环境要求
 
-## Expanding the ESLint configuration
+- Node.js 18+
+- npm 9+
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 安装与运行
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm run dev
+
+# 构建生产版本
+npm run build
+
+# 预览生产构建
+npm run preview
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+启动开发服务器后，在浏览器中打开终端显示的地址（默认 `http://localhost:5173`）即可开始游戏。
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 游戏玩法
 
-export default tseslint.config({
-  extends: [
-    // other configs...
-    // Enable lint rules for React
-    reactX.configs['recommended-typescript'],
-    // Enable lint rules for React DOM
-    reactDom.configs.recommended,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+### 操作方式
+
+| 操作 | 键盘 | 触控（移动端） |
+|------|------|----------------|
+| 移动 | 方向键 / WASD | 左侧方向按钮 |
+| 跳跃 | 空格键 | 「跳」按钮 |
+| 射击 | Z 键 | 「射」按钮 |
+| 下蹲 | ↓ / S | ↓ 按钮 |
+
+### 关卡一览
+
+| 关卡 | 名称 | 场景风格 |
+|------|------|----------|
+| 第 1 关 | 丛林基地 | 丛林军绿 |
+| 第 2 关 | 冰雪要塞 | 冰蓝深蓝 |
+| 第 3 关 | 熔岩工厂 | 熔岩暗红 |
+
+### 武器系统
+
+| 武器 | 标识 | 特点 |
+|------|------|------|
+| 步枪 | 默认 | 均衡射击，稳定输出 |
+| 散弹枪 | S | 5 发扇形散射，近距离威力大 |
+| 激光枪 | L | 穿透敌人，高伤害 |
+| 机关枪 | M | 极快射速，持续压制 |
+| 火焰枪 | F | 3 发火焰弹，最高单发伤害 |
+
+### 敌人类型
+
+| 敌人 | 特点 |
+|------|------|
+| 步兵 | 基础敌人，会巡逻和射击 |
+| 炮塔 | 固定位置，高射速 |
+| 飞行器 | 空中移动，灵活射击 |
+| 坦克 | 高血量，移动缓慢 |
+| Boss | 关底强敌，血量极高 |
+
+### 道具系统
+
+| 道具 | 效果 |
+|------|------|
+| 武器升级 | 拾取后切换为对应武器 |
+| 生命恢复 | 恢复生命值 |
+| 护盾 | 短暂无敌 |
+| 炸弹 | 清屏所有敌人 |
+
+### 核心规则
+
+- 玩家拥有 **3 条命**，每条命 **3 点生命值**
+- 受伤后短暂无敌，生命耗尽消耗一条命并重生
+- 3 条命全部用完则游戏结束
+- 击败每关 Boss 即可进入下一关
+- 分数和最高纪录自动保存至浏览器本地存储
+
+## 技术栈
+
+- **框架**：React 18 + TypeScript
+- **构建工具**：Vite 6
+- **状态管理**：Zustand
+- **样式**：Tailwind CSS
+- **渲染**：Canvas 2D
+
+## 项目结构
+
+```
+src/
+├── components/       # React 组件
+│   ├── GameCanvas.tsx   # 游戏画布
+│   ├── HUD.tsx          # 抬头显示面板
+│   └── TouchControls.tsx # 移动端触控按钮
+├── game/             # 游戏核心逻辑
+│   ├── constants.ts     # 常量配置
+│   ├── enemies.ts       # 敌人 AI
+│   ├── input.ts         # 输入处理
+│   ├── levels.ts        # 关卡数据
+│   ├── particles.ts     # 粒子特效
+│   ├── physics.ts       # 物理引擎
+│   ├── renderer.ts      # 渲染器
+│   ├── sprites.ts       # 精灵绘制
+│   ├── types.ts         # 类型定义
+│   └── weapons.ts       # 武器系统
+├── store/            # 状态管理
+│   └── gameStore.ts     # 游戏全局状态
+├── App.tsx           # 应用入口
+├── main.tsx          # 渲染入口
+└── index.css         # 全局样式
+```
+
+## 开发命令
+
+```bash
+# 类型检查
+npm run check
+
+# 代码检查
+npm run lint
+
+# 构建
+npm run build
 ```
