@@ -4,16 +4,15 @@
 flowchart TD
     "浏览器" --> "React应用"
     "React应用" --> "游戏引擎层"
-    "游戏引擎层" --> "地牢生成器"
+    "游戏引擎层" --> "物理引擎"
+    "游戏引擎层" --> "关卡系统"
     "游戏引擎层" --> "实体系统"
-    "游戏引擎层" --> "战斗系统"
-    "游戏引擎层" --> "物品系统"
-    "游戏引擎层" --> "AI系统"
-    "游戏引擎层" --> "迷雾系统"
-    "游戏引擎层" --> "回合管理器"
+    "游戏引擎层" --> "武器系统"
+    "游戏引擎层" --> "敌人AI"
+    "游戏引擎层" --> "粒子系统"
+    "游戏引擎层" --> "相机系统"
     "React应用" --> "Canvas渲染器"
     "React应用" --> "HUD组件"
-    "React应用" --> "消息日志"
     "React应用" --> "触控控制"
     "React应用" --> "localStorage"
 ```
@@ -23,7 +22,8 @@ flowchart TD
 - 初始化工具：Vite
 - 后端：无（纯前端单机游戏）
 - 数据存储：localStorage（最高分、游戏设置）
-- 渲染：HTML5 Canvas 2D（像素风渲染）
+- 渲染：HTML5 Canvas 2D（像素风渲染 + requestAnimationFrame 游戏循环）
+- 物理引擎：自研轻量级AABB碰撞检测 + 重力系统
 
 ## 3. 路由定义
 
@@ -45,69 +45,94 @@ flowchart TD
 
 ```mermaid
 erDiagram
-    "Player" ||--o{ "InventoryItem" : "拥有"
     "Player" {
-        int hp
-        int maxHp
-        int attack
-        int defense
-        int level
-        int exp
-        int expToNext
-        int floor
-        int score
         int x
         int y
-        int visionRange
+        int vx
+        int vy
+        int width
+        int height
+        int hp
+        int lives
+        int score
+        string weaponType
+        boolean onGround
+        boolean facingRight
+        boolean isCrouching
+        int invincibleTimer
+    }
+    "Bullet" {
+        int x
+        int y
+        int vx
+        int vy
+        int damage
+        string type
+        boolean fromPlayer
     }
     "Enemy" {
         string type
-        int hp
-        int maxHp
-        int attack
-        int defense
-        int expReward
-        string aiType
         int x
         int y
-        boolean isBoss
-    }
-    "Item" {
-        string type
-        string name
-        string effect
-        int value
-        int x
-        int y
-        boolean picked
-    }
-    "InventoryItem" {
-        string type
-        string name
-        string effect
-        int value
-        int slotIndex
-    }
-    "DungeonMap" {
+        int vx
+        int vy
         int width
         int height
-        int floor
-        int[][] tiles
-        boolean[][] explored
-        boolean[][] visible
+        int hp
+        int maxHp
+        string aiType
+        int shootTimer
+        boolean isBoss
     }
-    "Tile" {
-        int type
-        boolean walkable
-        boolean transparent
+    "Platform" {
+        int x
+        int y
+        int width
+        int height
+        boolean isMoving
+        int moveRange
+        int moveSpeed
+    }
+    "Pickup" {
+        string type
+        int x
+        int y
+        int width
+        int height
+        boolean collected
+    }
+    "Particle" {
+        int x
+        int y
+        int vx
+        int vy
+        int life
+        string color
+        int size
+    }
+    "Level" {
+        int width
+        int height
+        string name
+        Platform[] platforms
+        Enemy[] enemies
+        Pickup[] pickups
+        int bossTriggerX
     }
 ```
 
 ### 6.2 数据定义
 
-核心游戏状态使用 React Context + useReducer 管理：
+核心游戏状态使用 Zustand 管理：
 
-- **GameState**: 包含玩家、敌人列表、物品列表、地图数据、消息日志、游戏阶段
-- **DungeonMap**: 二维数组存储地砖类型（墙壁0/地板1/走廊2/门3/楼梯4），配合探索/可见布尔数组
-- **Player/Enemy/Item**: 纯数据对象，由对应系统函数操作
-- **ScoreRecord**: localStorage 存储格式 `{ highestFloor: number, highestScore: number, totalGames: number }`
+- **GameState**: 包含玩家、子弹列表、敌人列表、粒子列表、关卡数据、相机位置、游戏阶段、分数
+- **Player**: 位置+速度+尺寸，生命值/命数，当前武器，朝向，地面检测，无敌时间
+- **Bullet**: 位置+速度，伤害值，类型（普通/散弹/激光/火焰），归属（玩家/敌人）
+- **Enemy**: 位置+速度+尺寸，HP，AI类型（巡逻/射击/飞行/固定炮台），射击计时器
+- **Level**: 关卡宽度，平台数组，敌人配置，道具配置，Boss触发位置
+- **ScoreRecord**: localStorage 存储格式 `{ highestScore: number, highestLevel: number, totalGames: number }`
+
+### 6.3 游戏循环架构
+
+使用 requestAnimationFrame 驱动固定时间步长游戏循环：
+1. 处理输入 → 2. 更新物理 → 3. 更新AI → 4. 碰撞检测 → 5. 更新粒子 → 6. 更新相机 → 7. 渲染

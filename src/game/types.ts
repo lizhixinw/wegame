@@ -1,136 +1,157 @@
-export enum TileType {
-  Wall = 0,
-  Floor = 1,
-  Corridor = 2,
-  Door = 3,
-  StairsDown = 4,
-}
+export type WeaponType = 'rifle' | 'spread' | 'laser' | 'machinegun' | 'flame';
 
-export interface Tile {
-  type: TileType;
-  walkable: boolean;
-  transparent: boolean;
-}
+export type EnemyType = 'soldier' | 'turret' | 'flyer' | 'tank' | 'boss';
 
-export interface Position {
-  x: number;
-  y: number;
-}
-
-export interface Player {
-  hp: number;
-  maxHp: number;
-  attack: number;
-  defense: number;
-  level: number;
-  exp: number;
-  expToNext: number;
-  floor: number;
-  score: number;
-  x: number;
-  y: number;
-  visionRange: number;
-  inventory: InventoryItem[];
-  weapon: Equippable | null;
-  armor: Equippable | null;
-}
-
-export type AIType = 'patrol' | 'chase' | 'ranged';
-
-export interface Enemy {
-  id: string;
-  type: string;
-  name: string;
-  hp: number;
-  maxHp: number;
-  attack: number;
-  defense: number;
-  expReward: number;
-  aiType: AIType;
-  x: number;
-  y: number;
-  isBoss: boolean;
-  color: string;
-  symbol: string;
-  patrolDir: number;
-  patrolCounter: number;
-}
-
-export type ItemType = 'potion' | 'scroll' | 'weapon' | 'armor';
-
-export interface Item {
-  id: string;
-  type: ItemType;
-  name: string;
-  effect: string;
-  value: number;
-  x: number;
-  y: number;
-  picked: boolean;
-  symbol: string;
-  color: string;
-}
-
-export interface InventoryItem {
-  id: string;
-  type: ItemType;
-  name: string;
-  effect: string;
-  value: number;
-  symbol: string;
-  color: string;
-}
-
-export interface Equippable {
-  name: string;
-  attack?: number;
-  defense?: number;
-  symbol: string;
-  color: string;
-}
-
-export interface DungeonMap {
-  width: number;
-  height: number;
-  floor: number;
-  tiles: TileType[][];
-  explored: boolean[][];
-  visible: boolean[][];
-  rooms: Room[];
-}
-
-export interface Room {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  centerX: number;
-  centerY: number;
-}
-
-export interface Message {
-  id: number;
-  text: string;
-  color: string;
-  turn: number;
-}
+export type PickupType = 'weapon_spread' | 'weapon_laser' | 'weapon_machinegun' | 'weapon_flame' | 'health' | 'shield' | 'bomb';
 
 export type GamePhase = 'menu' | 'playing' | 'gameover';
 
-export interface ScoreRecord {
-  highestFloor: number;
-  highestScore: number;
-  totalGames: number;
+export interface Player {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  width: number;
+  height: number;
+  hp: number;
+  maxHp: number;
+  lives: number;
+  score: number;
+  weapon: WeaponType;
+  onGround: boolean;
+  facingRight: boolean;
+  isCrouching: boolean;
+  invincibleTimer: number;
+  shootCooldown: number;
+  animFrame: number;
+  animTimer: number;
+}
+
+export interface Bullet {
+  id: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  width: number;
+  height: number;
+  damage: number;
+  type: WeaponType;
+  fromPlayer: boolean;
+  life: number;
+  piercing: boolean;
+}
+
+export interface Enemy {
+  id: number;
+  type: EnemyType;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  width: number;
+  height: number;
+  hp: number;
+  maxHp: number;
+  shootTimer: number;
+  shootInterval: number;
+  facingRight: boolean;
+  isBoss: boolean;
+  active: boolean;
+  animFrame: number;
+  animTimer: number;
+  patrolDir: number;
+  patrolTimer: number;
+  onGround: boolean;
+}
+
+export interface Platform {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  type: 'ground' | 'bridge' | 'moving';
+  isMoving: boolean;
+  moveRange: number;
+  moveSpeed: number;
+  moveDir: number;
+  originX: number;
+}
+
+export interface Pickup {
+  id: number;
+  type: PickupType;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  collected: boolean;
+  bobTimer: number;
+}
+
+export interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+  color: string;
+  size: number;
+}
+
+export interface Camera {
+  x: number;
+  y: number;
+  shake: number;
+  shakeX: number;
+  shakeY: number;
+}
+
+export interface LevelData {
+  width: number;
+  height: number;
+  name: string;
+  bgColor1: string;
+  bgColor2: string;
+  groundColor: string;
+  platforms: Platform[];
+  enemySpawns: { type: EnemyType; x: number; y: number; isBoss: boolean }[];
+  pickupSpawns: { type: PickupType; x: number; y: number }[];
+  bossTriggerX: number;
 }
 
 export interface GameState {
   player: Player;
+  bullets: Bullet[];
   enemies: Enemy[];
-  items: Item[];
-  map: DungeonMap;
-  messages: Message[];
-  phase: GamePhase;
-  turn: number;
-  messageIdCounter: number;
+  particles: Particle[];
+  pickups: Pickup[];
+  camera: Camera;
+  level: LevelData;
+  levelIndex: number;
+  score: number;
   kills: number;
+  phase: 'playing' | 'dying' | 'levelComplete' | 'gameover';
+  screenFlash: number;
+  bulletIdCounter: number;
+  enemyIdCounter: number;
+  pickupIdCounter: number;
+  deathTimer: number;
+  levelCompleteTimer: number;
+}
+
+export interface InputState {
+  left: boolean;
+  right: boolean;
+  up: boolean;
+  down: boolean;
+  jump: boolean;
+  shoot: boolean;
+}
+
+export interface ScoreRecord {
+  highestScore: number;
+  highestLevel: number;
+  totalGames: number;
 }

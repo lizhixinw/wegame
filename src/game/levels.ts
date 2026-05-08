@@ -1,0 +1,198 @@
+import { LevelData, Platform, EnemyType, PickupType } from './types';
+import { CANVAS_HEIGHT } from './constants';
+
+function ground(x: number, width: number): Platform {
+  return { x, y: CANVAS_HEIGHT - 32, width, height: 32, type: 'ground', isMoving: false, moveRange: 0, moveSpeed: 0, moveDir: 1, originX: x };
+}
+
+function bridge(x: number, y: number, width: number): Platform {
+  return { x, y, width, height: 8, type: 'bridge', isMoving: false, moveRange: 0, moveSpeed: 0, moveDir: 1, originX: x };
+}
+
+function movingPlat(x: number, y: number, width: number, range: number, speed: number): Platform {
+  return { x, y, width, height: 8, type: 'bridge', isMoving: true, moveRange: range, moveSpeed: speed, moveDir: 1, originX: x };
+}
+
+const LEVEL_1: LevelData = {
+  width: 4800,
+  height: CANVAS_HEIGHT,
+  name: '丛林基地',
+  bgColor1: '#1a3a0a',
+  bgColor2: '#0d1f05',
+  groundColor: '#2d5016',
+  platforms: [
+    ground(0, 600),
+    ground(680, 400),
+    bridge(620, 320, 60),
+    bridge(750, 250, 80),
+    ground(1120, 500),
+    bridge(1050, 280, 70),
+    movingPlat(1650, 300, 80, 60, 0.5),
+    ground(1700, 600),
+    bridge(1900, 260, 100),
+    bridge(2100, 200, 80),
+    ground(2400, 400),
+    ground(2900, 800),
+    bridge(2850, 300, 80),
+    bridge(3100, 240, 100),
+    ground(3800, 500),
+    bridge(3750, 280, 60),
+    ground(4400, 400),
+  ],
+  enemySpawns: [
+    { type: 'soldier', x: 500, y: 0, isBoss: false },
+    { type: 'soldier', x: 900, y: 0, isBoss: false },
+    { type: 'turret', x: 1100, y: 350, isBoss: false },
+    { type: 'soldier', x: 1400, y: 0, isBoss: false },
+    { type: 'flyer', x: 1600, y: 100, isBoss: false },
+    { type: 'soldier', x: 2000, y: 0, isBoss: false },
+    { type: 'soldier', x: 2200, y: 0, isBoss: false },
+    { type: 'turret', x: 2500, y: 350, isBoss: false },
+    { type: 'flyer', x: 2800, y: 80, isBoss: false },
+    { type: 'soldier', x: 3000, y: 0, isBoss: false },
+    { type: 'soldier', x: 3200, y: 0, isBoss: false },
+    { type: 'turret', x: 3500, y: 350, isBoss: false },
+    { type: 'soldier', x: 3900, y: 0, isBoss: false },
+    { type: 'flyer', x: 4100, y: 100, isBoss: false },
+    { type: 'boss', x: 4500, y: 0, isBoss: true },
+  ],
+  pickupSpawns: [
+    { type: 'weapon_spread', x: 400, y: 350 },
+    { type: 'health', x: 1000, y: 200 },
+    { type: 'weapon_machinegun', x: 1800, y: 200 },
+    { type: 'health', x: 2600, y: 250 },
+    { type: 'weapon_laser', x: 3300, y: 180 },
+    { type: 'shield', x: 4000, y: 230 },
+  ],
+  bossTriggerX: 4300,
+};
+
+const LEVEL_2: LevelData = {
+  width: 5200,
+  height: CANVAS_HEIGHT,
+  name: '冰雪要塞',
+  bgColor1: '#0a1a3a',
+  bgColor2: '#050d1f',
+  groundColor: '#4a6a8a',
+  platforms: [
+    ground(0, 500),
+    bridge(450, 300, 80),
+    ground(600, 400),
+    bridge(550, 220, 60),
+    movingPlat(1050, 280, 80, 80, 0.7),
+    ground(1100, 500),
+    bridge(1300, 250, 100),
+    bridge(1500, 180, 80),
+    ground(1700, 600),
+    bridge(1900, 300, 80),
+    movingPlat(2350, 250, 80, 50, 0.6),
+    ground(2400, 500),
+    ground(3000, 700),
+    bridge(2950, 280, 100),
+    bridge(3200, 200, 80),
+    bridge(3450, 260, 60),
+    ground(3800, 400),
+    ground(4300, 600),
+    bridge(4500, 280, 80),
+    ground(4900, 300),
+  ],
+  enemySpawns: [
+    { type: 'soldier', x: 400, y: 0, isBoss: false },
+    { type: 'flyer', x: 700, y: 80, isBoss: false },
+    { type: 'turret', x: 900, y: 350, isBoss: false },
+    { type: 'soldier', x: 1200, y: 0, isBoss: false },
+    { type: 'soldier', x: 1500, y: 0, isBoss: false },
+    { type: 'flyer', x: 1800, y: 100, isBoss: false },
+    { type: 'tank', x: 2100, y: 0, isBoss: false },
+    { type: 'soldier', x: 2500, y: 0, isBoss: false },
+    { type: 'turret', x: 2800, y: 350, isBoss: false },
+    { type: 'flyer', x: 3100, y: 80, isBoss: false },
+    { type: 'soldier', x: 3400, y: 0, isBoss: false },
+    { type: 'tank', x: 3700, y: 0, isBoss: false },
+    { type: 'soldier', x: 4000, y: 0, isBoss: false },
+    { type: 'flyer', x: 4200, y: 100, isBoss: false },
+    { type: 'turret', x: 4500, y: 350, isBoss: false },
+    { type: 'boss', x: 5000, y: 0, isBoss: true },
+  ],
+  pickupSpawns: [
+    { type: 'weapon_spread', x: 300, y: 350 },
+    { type: 'health', x: 900, y: 170 },
+    { type: 'weapon_flame', x: 1600, y: 130 },
+    { type: 'shield', x: 2300, y: 200 },
+    { type: 'weapon_laser', x: 3100, y: 150 },
+    { type: 'health', x: 3900, y: 350 },
+    { type: 'bomb', x: 4600, y: 230 },
+  ],
+  bossTriggerX: 4800,
+};
+
+const LEVEL_3: LevelData = {
+  width: 5600,
+  height: CANVAS_HEIGHT,
+  name: '熔岩工厂',
+  bgColor1: '#3a0a0a',
+  bgColor2: '#1f0505',
+  groundColor: '#5a2a1a',
+  platforms: [
+    ground(0, 400),
+    bridge(350, 300, 80),
+    movingPlat(500, 250, 80, 60, 0.8),
+    ground(620, 500),
+    bridge(800, 280, 60),
+    bridge(950, 200, 80),
+    ground(1100, 400),
+    movingPlat(1550, 280, 80, 80, 0.6),
+    ground(1600, 600),
+    bridge(1800, 250, 100),
+    bridge(2000, 180, 80),
+    ground(2200, 500),
+    bridge(2400, 300, 80),
+    movingPlat(2750, 250, 80, 50, 0.7),
+    ground(2800, 400),
+    ground(3300, 600),
+    bridge(3500, 280, 100),
+    bridge(3700, 200, 80),
+    ground(3900, 500),
+    ground(4500, 400),
+    bridge(4450, 280, 60),
+    movingPlat(4900, 300, 80, 60, 0.5),
+    ground(5000, 600),
+  ],
+  enemySpawns: [
+    { type: 'soldier', x: 350, y: 0, isBoss: false },
+    { type: 'turret', x: 600, y: 350, isBoss: false },
+    { type: 'flyer', x: 800, y: 80, isBoss: false },
+    { type: 'tank', x: 1100, y: 0, isBoss: false },
+    { type: 'soldier', x: 1400, y: 0, isBoss: false },
+    { type: 'flyer', x: 1700, y: 100, isBoss: false },
+    { type: 'turret', x: 2000, y: 350, isBoss: false },
+    { type: 'soldier', x: 2300, y: 0, isBoss: false },
+    { type: 'tank', x: 2600, y: 0, isBoss: false },
+    { type: 'soldier', x: 2900, y: 0, isBoss: false },
+    { type: 'flyer', x: 3200, y: 80, isBoss: false },
+    { type: 'turret', x: 3500, y: 350, isBoss: false },
+    { type: 'soldier', x: 3800, y: 0, isBoss: false },
+    { type: 'tank', x: 4100, y: 0, isBoss: false },
+    { type: 'flyer', x: 4400, y: 100, isBoss: false },
+    { type: 'soldier', x: 4700, y: 0, isBoss: false },
+    { type: 'turret', x: 4900, y: 350, isBoss: false },
+    { type: 'boss', x: 5300, y: 0, isBoss: true },
+  ],
+  pickupSpawns: [
+    { type: 'weapon_spread', x: 250, y: 350 },
+    { type: 'health', x: 750, y: 230 },
+    { type: 'weapon_flame', x: 1300, y: 200 },
+    { type: 'shield', x: 2100, y: 130 },
+    { type: 'weapon_laser', x: 2900, y: 350 },
+    { type: 'health', x: 3600, y: 150 },
+    { type: 'weapon_machinegun', x: 4300, y: 230 },
+    { type: 'bomb', x: 4800, y: 350 },
+  ],
+  bossTriggerX: 5100,
+};
+
+export const LEVELS: LevelData[] = [LEVEL_1, LEVEL_2, LEVEL_3];
+
+export function getLevel(index: number): LevelData {
+  return LEVELS[index % LEVELS.length];
+}

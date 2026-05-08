@@ -1,537 +1,234 @@
-import { TileType, Enemy, Item } from './types';
+import { Player, Enemy, Bullet, Pickup, Particle, WeaponType, EnemyType } from './types';
 
-const TILE_SIZE = 20;
-
-const SPRITE_COLORS = {
-  player: {
-    skin: '#f5d0a9',
-    hair: '#4a3728',
-    shirt: '#4fc3f7',
-    pants: '#2c3e50',
-    eyes: '#2c3e50',
-  },
-  rat: {
-    body: '#8B7355',
-    eyes: '#ff0000',
-    nose: '#ffb6c1',
-  },
-  bat: {
-    body: '#696969',
-    wings: '#4a4a4a',
-    eyes: '#ff0000',
-  },
-  skeleton: {
-    bone: '#D3D3D3',
-    eyes: '#ff0000',
-  },
-  goblin: {
-    skin: '#228B22',
-    eyes: '#ffff00',
-  },
-  orc: {
-    skin: '#556B2F',
-    tusks: '#ffffcc',
-  },
-  mage: {
-    robe: '#8A2BE2',
-    eyes: '#ffff00',
-    staff: '#8B4513',
-  },
-  demon: {
-    body: '#DC143C',
-    horns: '#8B0000',
-    eyes: '#ffff00',
-  },
-  boss1: {
-    body: '#FFD700',
-    crown: '#8B0000',
-    eyes: '#ff0000',
-  },
-  boss2: {
-    body: '#FF4500',
-    cloak: '#4B0082',
-    eyes: '#ffffff',
-  },
-  boss3: {
-    body: '#8B0000',
-    flames: '#ff4500',
-    eyes: '#ffffff',
-  },
-  potion: {
-    glass: '#2d6a4f',
-    liquid: '#90EE90',
-    cap: '#8B4513',
-  },
-  potionRed: {
-    glass: '#e94560',
-    liquid: '#ff6b6b',
-    cap: '#8B4513',
-  },
-  scroll: {
-    paper: '#f5deb3',
-    ink: '#4a3a2a',
-  },
-  sword: {
-    blade: '#C0C0C0',
-    hilt: '#8B4513',
-    gem: '#4169E1',
-  },
-  armor: {
-    metal: '#708090',
-    strap: '#8B4513',
-  },
-};
-
-function drawPixel(ctx: CanvasRenderingContext2D, x: number, y: number, color: string, size = 2): void {
+function px(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, color: string) {
   ctx.fillStyle = color;
-  ctx.fillRect(x, y, size, size);
+  ctx.fillRect(Math.floor(x), Math.floor(y), w, h);
 }
 
-function drawPlayer(ctx: CanvasRenderingContext2D, px: number, py: number): void {
-  const p = SPRITE_COLORS.player;
+export function drawPlayer(ctx: CanvasRenderingContext2D, player: Player, frame: number) {
+  const x = Math.floor(player.x);
+  const y = Math.floor(player.y);
+  const dir = player.facingRight ? 1 : -1;
   const s = 2;
 
-  drawPixel(ctx, px + 6 * s, py + 0, p.hair, s);
-  drawPixel(ctx, px + 8 * s, py + 0, p.hair, s);
-  drawPixel(ctx, px + 6 * s, py + 2 * s, p.hair, s);
-  drawPixel(ctx, px + 8 * s, py + 2 * s, p.hair, s);
+  if (player.invincibleTimer > 0 && Math.floor(player.invincibleTimer / 3) % 2 === 0) return;
 
-  drawPixel(ctx, px + 6 * s, py + 4 * s, p.skin, s);
-  drawPixel(ctx, px + 8 * s, py + 4 * s, p.skin, s);
-  drawPixel(ctx, px + 6 * s, py + 6 * s, p.skin, s);
-  drawPixel(ctx, px + 8 * s, py + 6 * s, p.skin, s);
-
-  drawPixel(ctx, px + 7 * s, py + 5 * s, p.eyes, s);
-
-  drawPixel(ctx, px + 4 * s, py + 8 * s, p.shirt, s);
-  drawPixel(ctx, px + 6 * s, py + 8 * s, p.shirt, s);
-  drawPixel(ctx, px + 8 * s, py + 8 * s, p.shirt, s);
-  drawPixel(ctx, px + 10 * s, py + 8 * s, p.shirt, s);
-  drawPixel(ctx, px + 4 * s, py + 10 * s, p.shirt, s);
-  drawPixel(ctx, px + 6 * s, py + 10 * s, p.shirt, s);
-  drawPixel(ctx, px + 8 * s, py + 10 * s, p.shirt, s);
-  drawPixel(ctx, px + 10 * s, py + 10 * s, p.shirt, s);
-
-  drawPixel(ctx, px + 6 * s, py + 12 * s, p.pants, s);
-  drawPixel(ctx, px + 8 * s, py + 12 * s, p.pants, s);
-  drawPixel(ctx, px + 6 * s, py + 14 * s, p.pants, s);
-  drawPixel(ctx, px + 8 * s, py + 14 * s, p.pants, s);
-
-  drawPixel(ctx, px + 6 * s, py + 16 * s, '#4a3728', s);
-  drawPixel(ctx, px + 8 * s, py + 16 * s, '#4a3728', s);
-}
-
-function drawRat(ctx: CanvasRenderingContext2D, px: number, py: number): void {
-  const r = SPRITE_COLORS.rat;
-  const s = 2;
-
-  drawPixel(ctx, px + 8 * s, py + 4 * s, r.body, s);
-  drawPixel(ctx, px + 10 * s, py + 4 * s, r.body, s);
-  drawPixel(ctx, px + 6 * s, py + 6 * s, r.body, s);
-  drawPixel(ctx, px + 8 * s, py + 6 * s, r.body, s);
-  drawPixel(ctx, px + 10 * s, py + 6 * s, r.body, s);
-  drawPixel(ctx, px + 12 * s, py + 6 * s, r.body, s);
-  drawPixel(ctx, px + 6 * s, py + 8 * s, r.body, s);
-  drawPixel(ctx, px + 8 * s, py + 8 * s, r.nose, s);
-  drawPixel(ctx, px + 10 * s, py + 8 * s, r.body, s);
-
-  drawPixel(ctx, px + 7 * s, py + 5 * s, r.eyes, s);
-  drawPixel(ctx, px + 11 * s, py + 5 * s, r.eyes, s);
-
-  drawPixel(ctx, px + 14 * s, py + 6 * s, r.body, s);
-  drawPixel(ctx, px + 14 * s, py + 8 * s, r.body, s);
-}
-
-function drawBat(ctx: CanvasRenderingContext2D, px: number, py: number): void {
-  const b = SPRITE_COLORS.bat;
-  const s = 2;
-
-  for (let i = 0; i < 3; i++) {
-    drawPixel(ctx, px + (2 + i) * s, py + 4 * s, b.wings, s);
-    drawPixel(ctx, px + (10 + i) * s, py + 4 * s, b.wings, s);
-  }
-  for (let i = 0; i < 2; i++) {
-    drawPixel(ctx, px + (0 + i) * s, py + 6 * s, b.wings, s);
-    drawPixel(ctx, px + (12 + i) * s, py + 6 * s, b.wings, s);
+  ctx.save();
+  if (!player.facingRight) {
+    ctx.translate(x + player.width, y);
+    ctx.scale(-1, 1);
+    ctx.translate(0, 0);
+  } else {
+    ctx.translate(x, y);
   }
 
-  drawPixel(ctx, px + 6 * s, py + 6 * s, b.body, s);
-  drawPixel(ctx, px + 8 * s, py + 6 * s, b.body, s);
+  const headY = player.isCrouching ? 4 : 0;
 
-  drawPixel(ctx, px + 6 * s, py + 4 * s, b.body, s);
-  drawPixel(ctx, px + 8 * s, py + 4 * s, b.body, s);
+  px(ctx, 4, headY + 0, 12, 4, '#4a3728');
+  px(ctx, 6, headY + 4, 8, 4, '#f5d0a9');
+  px(ctx, 8, headY + 5, 2, 2, '#2c3e50');
+  px(ctx, 6, headY + 7, 8, 2, '#f5d0a9');
 
-  drawPixel(ctx, px + 7 * s, py + 7 * s, b.eyes, s);
-  drawPixel(ctx, px + 9 * s, py + 7 * s, b.eyes, s);
-}
+  px(ctx, 4, headY + 8, 12, 6, '#2d5016');
+  px(ctx, 2, headY + 10, 2, 4, '#2d5016');
+  px(ctx, 16, headY + 10, 4, 4, '#2d5016');
 
-function drawSkeleton(ctx: CanvasRenderingContext2D, px: number, py: number): void {
-  const sk = SPRITE_COLORS.skeleton;
-  const s = 2;
+  px(ctx, 16, headY + 8, 6, 2, '#8B4513');
+  px(ctx, 20, headY + 6, 2, 4, '#666');
 
-  drawPixel(ctx, px + 6 * s, py + 2 * s, sk.bone, s);
-  drawPixel(ctx, px + 8 * s, py + 2 * s, sk.bone, s);
-  drawPixel(ctx, px + 6 * s, py + 4 * s, sk.bone, s);
-  drawPixel(ctx, px + 8 * s, py + 4 * s, sk.bone, s);
-
-  drawPixel(ctx, px + 5 * s, py + 6 * s, sk.bone, s);
-  drawPixel(ctx, px + 6 * s, py + 6 * s, sk.bone, s);
-  drawPixel(ctx, px + 8 * s, py + 6 * s, sk.bone, s);
-  drawPixel(ctx, px + 9 * s, py + 6 * s, sk.bone, s);
-
-  drawPixel(ctx, px + 6 * s, py + 8 * s, sk.bone, s);
-  drawPixel(ctx, px + 8 * s, py + 8 * s, sk.bone, s);
-
-  drawPixel(ctx, px + 7 * s, py + 5 * s, sk.eyes, s);
-  drawPixel(ctx, px + 9 * s, py + 5 * s, sk.eyes, s);
-
-  drawPixel(ctx, px + 7 * s, py + 10 * s, sk.bone, s);
-  drawPixel(ctx, px + 7 * s, py + 12 * s, sk.bone, s);
-
-  drawPixel(ctx, px + 5 * s, py + 10 * s, sk.bone, s);
-  drawPixel(ctx, px + 9 * s, py + 10 * s, sk.bone, s);
-
-  drawPixel(ctx, px + 6 * s, py + 14 * s, sk.bone, s);
-  drawPixel(ctx, px + 8 * s, py + 14 * s, sk.bone, s);
-}
-
-function drawGoblin(ctx: CanvasRenderingContext2D, px: number, py: number): void {
-  const g = SPRITE_COLORS.goblin;
-  const s = 2;
-
-  drawPixel(ctx, px + 4 * s, py + 2 * s, g.skin, s);
-  drawPixel(ctx, px + 6 * s, py + 4 * s, g.skin, s);
-  drawPixel(ctx, px + 8 * s, py + 4 * s, g.skin, s);
-  drawPixel(ctx, px + 10 * s, py + 2 * s, g.skin, s);
-
-  drawPixel(ctx, px + 6 * s, py + 6 * s, g.skin, s);
-  drawPixel(ctx, px + 8 * s, py + 6 * s, g.skin, s);
-
-  drawPixel(ctx, px + 7 * s, py + 5 * s, g.eyes, s);
-  drawPixel(ctx, px + 9 * s, py + 5 * s, g.eyes, s);
-
-  drawPixel(ctx, px + 5 * s, py + 8 * s, g.skin, s);
-  drawPixel(ctx, px + 9 * s, py + 8 * s, g.skin, s);
-  drawPixel(ctx, px + 6 * s, py + 8 * s, '#2a2a2a', s);
-  drawPixel(ctx, px + 8 * s, py + 8 * s, '#2a2a2a', s);
-
-  drawPixel(ctx, px + 6 * s, py + 10 * s, g.skin, s);
-  drawPixel(ctx, px + 8 * s, py + 10 * s, g.skin, s);
-
-  drawPixel(ctx, px + 6 * s, py + 12 * s, '#556B2F', s);
-  drawPixel(ctx, px + 8 * s, py + 12 * s, '#556B2F', s);
-}
-
-function drawOrc(ctx: CanvasRenderingContext2D, px: number, py: number): void {
-  const o = SPRITE_COLORS.orc;
-  const s = 2;
-
-  drawPixel(ctx, px + 4 * s, py + 2 * s, o.skin, s);
-  drawPixel(ctx, px + 6 * s, py + 2 * s, o.skin, s);
-  drawPixel(ctx, px + 8 * s, py + 2 * s, o.skin, s);
-  drawPixel(ctx, px + 10 * s, py + 2 * s, o.skin, s);
-
-  drawPixel(ctx, px + 4 * s, py + 4 * s, o.skin, s);
-  drawPixel(ctx, px + 6 * s, py + 4 * s, o.skin, s);
-  drawPixel(ctx, px + 8 * s, py + 4 * s, o.skin, s);
-  drawPixel(ctx, px + 10 * s, py + 4 * s, o.skin, s);
-
-  drawPixel(ctx, px + 5 * s, py + 6 * s, o.skin, s);
-  drawPixel(ctx, px + 6 * s, py + 6 * s, o.skin, s);
-  drawPixel(ctx, px + 8 * s, py + 6 * s, o.skin, s);
-  drawPixel(ctx, px + 9 * s, py + 6 * s, o.skin, s);
-
-  drawPixel(ctx, px + 6 * s, py + 5 * s, '#ff0000', s);
-  drawPixel(ctx, px + 8 * s, py + 5 * s, '#ff0000', s);
-
-  drawPixel(ctx, px + 6 * s, py + 8 * s, o.skin, s);
-  drawPixel(ctx, px + 8 * s, py + 8 * s, o.skin, s);
-
-  drawPixel(ctx, px + 5 * s, py + 7 * s, o.tusks, s);
-  drawPixel(ctx, px + 9 * s, py + 7 * s, o.tusks, s);
-
-  drawPixel(ctx, px + 4 * s, py + 10 * s, '#3d3d3d', s);
-  drawPixel(ctx, px + 6 * s, py + 10 * s, '#3d3d3d', s);
-  drawPixel(ctx, px + 8 * s, py + 10 * s, '#3d3d3d', s);
-  drawPixel(ctx, px + 10 * s, py + 10 * s, '#3d3d3d', s);
-}
-
-function drawMage(ctx: CanvasRenderingContext2D, px: number, py: number): void {
-  const m = SPRITE_COLORS.mage;
-  const s = 2;
-
-  drawPixel(ctx, px + 6 * s, py + 0, m.robe, s);
-  drawPixel(ctx, px + 8 * s, py + 0, m.robe, s);
-
-  drawPixel(ctx, px + 4 * s, py + 2 * s, m.robe, s);
-  drawPixel(ctx, px + 6 * s, py + 2 * s, m.robe, s);
-  drawPixel(ctx, px + 8 * s, py + 2 * s, m.robe, s);
-  drawPixel(ctx, px + 10 * s, py + 2 * s, m.robe, s);
-
-  drawPixel(ctx, px + 6 * s, py + 4 * s, m.robe, s);
-  drawPixel(ctx, px + 8 * s, py + 4 * s, m.robe, s);
-
-  drawPixel(ctx, px + 7 * s, py + 3 * s, m.eyes, s);
-  drawPixel(ctx, px + 9 * s, py + 3 * s, m.eyes, s);
-
-  drawPixel(ctx, px + 6 * s, py + 6 * s, m.robe, s);
-  drawPixel(ctx, px + 8 * s, py + 6 * s, m.robe, s);
-  drawPixel(ctx, px + 10 * s, py + 6 * s, m.robe, s);
-
-  drawPixel(ctx, px + 6 * s, py + 8 * s, m.robe, s);
-  drawPixel(ctx, px + 8 * s, py + 8 * s, m.robe, s);
-  drawPixel(ctx, px + 10 * s, py + 8 * s, m.robe, s);
-
-  drawPixel(ctx, px + 11 * s, py + 4 * s, m.staff, s);
-  drawPixel(ctx, px + 11 * s, py + 6 * s, m.staff, s);
-  drawPixel(ctx, px + 11 * s, py + 8 * s, m.staff, s);
-  drawPixel(ctx, px + 11 * s, py + 10 * s, m.staff, s);
-  drawPixel(ctx, px + 10 * s, py + 2 * s, m.eyes, s);
-}
-
-function drawDemon(ctx: CanvasRenderingContext2D, px: number, py: number): void {
-  const d = SPRITE_COLORS.demon;
-  const s = 2;
-
-  drawPixel(ctx, px + 4 * s, py + 0, d.horns, s);
-  drawPixel(ctx, px + 10 * s, py + 0, d.horns, s);
-
-  drawPixel(ctx, px + 4 * s, py + 2 * s, d.body, s);
-  drawPixel(ctx, px + 6 * s, py + 2 * s, d.body, s);
-  drawPixel(ctx, px + 8 * s, py + 2 * s, d.body, s);
-  drawPixel(ctx, px + 10 * s, py + 2 * s, d.body, s);
-
-  drawPixel(ctx, px + 4 * s, py + 4 * s, d.body, s);
-  drawPixel(ctx, px + 6 * s, py + 4 * s, d.body, s);
-  drawPixel(ctx, px + 8 * s, py + 4 * s, d.body, s);
-  drawPixel(ctx, px + 10 * s, py + 4 * s, d.body, s);
-
-  drawPixel(ctx, px + 6 * s, py + 6 * s, d.body, s);
-  drawPixel(ctx, px + 8 * s, py + 6 * s, d.body, s);
-
-  drawPixel(ctx, px + 7 * s, py + 3 * s, d.eyes, s);
-  drawPixel(ctx, px + 9 * s, py + 3 * s, d.eyes, s);
-
-  drawPixel(ctx, px + 4 * s, py + 8 * s, d.body, s);
-  drawPixel(ctx, px + 10 * s, py + 8 * s, d.body, s);
-  drawPixel(ctx, px + 6 * s, py + 8 * s, d.body, s);
-  drawPixel(ctx, px + 8 * s, py + 8 * s, d.body, s);
-
-  drawPixel(ctx, px + 4 * s, py + 10 * s, d.body, s);
-  drawPixel(ctx, px + 10 * s, py + 10 * s, d.body, s);
-}
-
-function drawBoss1(ctx: CanvasRenderingContext2D, px: number, py: number): void {
-  const b = SPRITE_COLORS.boss1;
-  const s = 2;
-
-  drawPixel(ctx, px + 5 * s, py + 0, b.crown, s);
-  drawPixel(ctx, px + 7 * s, py + 0, b.crown, s);
-  drawPixel(ctx, px + 9 * s, py + 0, b.crown, s);
-  drawPixel(ctx, px + 7 * s, py + 2 * s, b.crown, s);
-
-  drawPixel(ctx, px + 4 * s, py + 2 * s, b.body, s);
-  drawPixel(ctx, px + 6 * s, py + 2 * s, b.body, s);
-  drawPixel(ctx, px + 8 * s, py + 2 * s, b.body, s);
-  drawPixel(ctx, px + 10 * s, py + 2 * s, b.body, s);
-
-  drawPixel(ctx, px + 4 * s, py + 4 * s, b.body, s);
-  drawPixel(ctx, px + 6 * s, py + 4 * s, b.body, s);
-  drawPixel(ctx, px + 8 * s, py + 4 * s, b.body, s);
-  drawPixel(ctx, px + 10 * s, py + 4 * s, b.body, s);
-
-  drawPixel(ctx, px + 6 * s, py + 6 * s, b.body, s);
-  drawPixel(ctx, px + 8 * s, py + 6 * s, b.body, s);
-
-  drawPixel(ctx, px + 7 * s, py + 3 * s, b.eyes, s);
-  drawPixel(ctx, px + 9 * s, py + 3 * s, b.eyes, s);
-
-  for (let i = 0; i < 4; i++) {
-    drawPixel(ctx, px + (4 + i * 2) * s, py + 8 * s, b.body, s);
-    drawPixel(ctx, px + (4 + i * 2) * s, py + 10 * s, b.body, s);
+  if (player.isCrouching) {
+    px(ctx, 4, 14, 12, 6, '#3a5a20');
+  } else {
+    px(ctx, 4, 14, 12, 8, '#3a5a20');
+    const legOffset = player.onGround ? (frame % 2 === 0 ? 0 : 2) : 0;
+    px(ctx, 4, 22, 4, 10 + legOffset, '#2c3e50');
+    px(ctx, 12, 22, 4, 10 - legOffset, '#2c3e50');
+    px(ctx, 4, 30 + legOffset, 5, 2, '#1a1a1a');
+    px(ctx, 12, 30 - legOffset, 5, 2, '#1a1a1a');
   }
 
-  drawPixel(ctx, px + 6 * s, py + 12 * s, b.body, s);
-  drawPixel(ctx, px + 8 * s, py + 12 * s, b.body, s);
+  ctx.restore();
 }
 
-function drawPotion(ctx: CanvasRenderingContext2D, px: number, py: number, color: string): void {
-  const s = 2;
+export function drawEnemy(ctx: CanvasRenderingContext2D, enemy: Enemy) {
+  const x = Math.floor(enemy.x);
+  const y = Math.floor(enemy.y);
 
-  drawPixel(ctx, px + 7 * s, py + 0, '#8B4513', s);
-  drawPixel(ctx, px + 8 * s, py + 0, '#8B4513', s);
+  ctx.save();
+  if (!enemy.facingRight) {
+    ctx.translate(x + enemy.width, y);
+    ctx.scale(-1, 1);
+  } else {
+    ctx.translate(x, y);
+  }
 
-  drawPixel(ctx, px + 7 * s, py + 2 * s, '#8B4513', s);
-  drawPixel(ctx, px + 8 * s, py + 2 * s, '#8B4513', s);
-
-  drawPixel(ctx, px + 6 * s, py + 4 * s, color, s);
-  drawPixel(ctx, px + 7 * s, py + 4 * s, color, s);
-  drawPixel(ctx, px + 8 * s, py + 4 * s, color, s);
-  drawPixel(ctx, px + 9 * s, py + 4 * s, color, s);
-
-  drawPixel(ctx, px + 5 * s, py + 6 * s, color, s);
-  drawPixel(ctx, px + 6 * s, py + 6 * s, color, s);
-  drawPixel(ctx, px + 7 * s, py + 6 * s, color, s);
-  drawPixel(ctx, px + 8 * s, py + 6 * s, color, s);
-  drawPixel(ctx, px + 9 * s, py + 6 * s, color, s);
-  drawPixel(ctx, px + 10 * s, py + 6 * s, color, s);
-
-  drawPixel(ctx, px + 6 * s, py + 8 * s, color, s);
-  drawPixel(ctx, px + 7 * s, py + 8 * s, color, s);
-  drawPixel(ctx, px + 8 * s, py + 8 * s, color, s);
-  drawPixel(ctx, px + 9 * s, py + 8 * s, color, s);
-
-  drawPixel(ctx, px + 7 * s, py + 10 * s, color, s);
-  drawPixel(ctx, px + 8 * s, py + 10 * s, color, s);
-}
-
-function drawScroll(ctx: CanvasRenderingContext2D, px: number, py: number): void {
-  const s = 2;
-
-  drawPixel(ctx, px + 4 * s, py + 2 * s, '#f5deb3', s);
-  drawPixel(ctx, px + 6 * s, py + 2 * s, '#f5deb3', s);
-  drawPixel(ctx, px + 8 * s, py + 2 * s, '#f5deb3', s);
-  drawPixel(ctx, px + 10 * s, py + 2 * s, '#f5deb3', s);
-
-  drawPixel(ctx, px + 4 * s, py + 4 * s, '#f5deb3', s);
-  drawPixel(ctx, px + 6 * s, py + 4 * s, '#4a3a2a', s);
-  drawPixel(ctx, px + 8 * s, py + 4 * s, '#4a3a2a', s);
-  drawPixel(ctx, px + 10 * s, py + 4 * s, '#f5deb3', s);
-
-  drawPixel(ctx, px + 4 * s, py + 6 * s, '#f5deb3', s);
-  drawPixel(ctx, px + 6 * s, py + 6 * s, '#4a3a2a', s);
-  drawPixel(ctx, px + 8 * s, py + 6 * s, '#4a3a2a', s);
-  drawPixel(ctx, px + 10 * s, py + 6 * s, '#f5deb3', s);
-
-  drawPixel(ctx, px + 4 * s, py + 8 * s, '#f5deb3', s);
-  drawPixel(ctx, px + 6 * s, py + 8 * s, '#f5deb3', s);
-  drawPixel(ctx, px + 8 * s, py + 8 * s, '#f5deb3', s);
-  drawPixel(ctx, px + 10 * s, py + 8 * s, '#f5deb3', s);
-}
-
-function drawSword(ctx: CanvasRenderingContext2D, px: number, py: number): void {
-  const s = 2;
-
-  drawPixel(ctx, px + 7 * s, py + 0, '#C0C0C0', s);
-  drawPixel(ctx, px + 7 * s, py + 2 * s, '#C0C0C0', s);
-  drawPixel(ctx, px + 7 * s, py + 4 * s, '#C0C0C0', s);
-  drawPixel(ctx, px + 7 * s, py + 6 * s, '#C0C0C0', s);
-  drawPixel(ctx, px + 7 * s, py + 8 * s, '#C0C0C0', s);
-
-  drawPixel(ctx, px + 6 * s, py + 10 * s, '#8B4513', s);
-  drawPixel(ctx, px + 8 * s, py + 10 * s, '#8B4513', s);
-
-  drawPixel(ctx, px + 6 * s, py + 12 * s, '#8B4513', s);
-  drawPixel(ctx, px + 7 * s, py + 12 * s, '#4169E1', s);
-  drawPixel(ctx, px + 8 * s, py + 12 * s, '#8B4513', s);
-}
-
-function drawArmor(ctx: CanvasRenderingContext2D, px: number, py: number): void {
-  const s = 2;
-
-  drawPixel(ctx, px + 5 * s, py + 4 * s, '#708090', s);
-  drawPixel(ctx, px + 7 * s, py + 4 * s, '#708090', s);
-  drawPixel(ctx, px + 9 * s, py + 4 * s, '#708090', s);
-
-  drawPixel(ctx, px + 4 * s, py + 6 * s, '#708090', s);
-  drawPixel(ctx, px + 6 * s, py + 6 * s, '#708090', s);
-  drawPixel(ctx, px + 8 * s, py + 6 * s, '#708090', s);
-  drawPixel(ctx, px + 10 * s, py + 6 * s, '#708090', s);
-
-  drawPixel(ctx, px + 4 * s, py + 8 * s, '#708090', s);
-  drawPixel(ctx, px + 6 * s, py + 8 * s, '#708090', s);
-  drawPixel(ctx, px + 8 * s, py + 8 * s, '#708090', s);
-  drawPixel(ctx, px + 10 * s, py + 8 * s, '#708090', s);
-
-  drawPixel(ctx, px + 5 * s, py + 10 * s, '#708090', s);
-  drawPixel(ctx, px + 7 * s, py + 10 * s, '#708090', s);
-  drawPixel(ctx, px + 9 * s, py + 10 * s, '#708090', s);
-
-  drawPixel(ctx, px + 4 * s, py + 7 * s, '#8B4513', s);
-  drawPixel(ctx, px + 10 * s, py + 7 * s, '#8B4513', s);
-}
-
-export function drawCharacter(
-  ctx: CanvasRenderingContext2D,
-  type: string,
-  x: number,
-  y: number,
-  isBoss = false,
-): void {
-  const px = x * TILE_SIZE;
-  const py = y * TILE_SIZE;
-
-  switch (type) {
-    case 'rat':
-      drawRat(ctx, px, py);
+  switch (enemy.type) {
+    case 'soldier':
+      px(ctx, 3, 0, 12, 4, '#8B0000');
+      px(ctx, 5, 4, 8, 4, '#daa520');
+      px(ctx, 7, 5, 2, 2, '#000');
+      px(ctx, 3, 8, 12, 8, '#8B0000');
+      px(ctx, 14, 10, 6, 2, '#8B4513');
+      px(ctx, 18, 8, 2, 4, '#666');
+      px(ctx, 4, 16, 4, 10, '#5a0000');
+      px(ctx, 10, 16, 4, 10, '#5a0000');
       break;
-    case 'bat':
-      drawBat(ctx, px, py);
+    case 'turret':
+      px(ctx, 2, 8, 20, 16, '#555');
+      px(ctx, 4, 10, 16, 12, '#777');
+      px(ctx, 18, 14, 8, 4, '#444');
+      px(ctx, 24, 12, 4, 8, '#333');
+      px(ctx, 6, 4, 4, 6, '#ff4422');
+      px(ctx, 14, 4, 4, 6, '#ff4422');
       break;
-    case 'skeleton':
-      drawSkeleton(ctx, px, py);
+    case 'flyer':
+      px(ctx, 4, 4, 14, 8, '#4a4a8a');
+      px(ctx, 0, 2, 6, 4, '#6a6aaa');
+      px(ctx, 16, 2, 6, 4, '#6a6aaa');
+      px(ctx, 8, 6, 2, 2, '#ff0');
+      px(ctx, 12, 6, 2, 2, '#ff0');
+      px(ctx, 6, 12, 10, 4, '#3a3a6a');
       break;
-    case 'goblin':
-      drawGoblin(ctx, px, py);
-      break;
-    case 'orc':
-      drawOrc(ctx, px, py);
-      break;
-    case 'mage':
-      drawMage(ctx, px, py);
-      break;
-    case 'demon':
-      drawDemon(ctx, px, py);
+    case 'tank':
+      px(ctx, 0, 12, 40, 16, '#556B2F');
+      px(ctx, 4, 8, 32, 8, '#6B8E23');
+      px(ctx, 30, 10, 14, 4, '#556B2F');
+      px(ctx, 40, 8, 4, 8, '#444');
+      px(ctx, 8, 14, 6, 4, '#ff4422');
+      px(ctx, 16, 14, 6, 4, '#ff4422');
+      px(ctx, 4, 28, 8, 4, '#333');
+      px(ctx, 28, 28, 8, 4, '#333');
       break;
     case 'boss':
-      if (isBoss) {
-        drawBoss1(ctx, px, py);
-      } else {
-        drawDemon(ctx, px, py);
-      }
+      px(ctx, 8, 0, 48, 8, '#8B0000');
+      px(ctx, 12, 4, 8, 4, '#ffd700');
+      px(ctx, 44, 4, 8, 4, '#ffd700');
+      px(ctx, 4, 8, 56, 24, '#5a0000');
+      px(ctx, 8, 12, 48, 16, '#8B0000');
+      px(ctx, 16, 16, 8, 4, '#ff0');
+      px(ctx, 40, 16, 8, 4, '#ff0');
+      px(ctx, 24, 24, 16, 8, '#daa520');
+      px(ctx, 0, 32, 20, 16, '#5a0000');
+      px(ctx, 44, 32, 20, 16, '#5a0000');
+      px(ctx, 52, 20, 16, 4, '#8B4513');
+      px(ctx, 64, 16, 4, 12, '#666');
+      px(ctx, 8, 48, 12, 12, '#3a0000');
+      px(ctx, 44, 48, 12, 12, '#3a0000');
       break;
-    default:
-      drawRat(ctx, px, py);
+  }
+
+  ctx.restore();
+
+  if (enemy.hp < enemy.maxHp && enemy.hp > 0) {
+    const barW = enemy.width;
+    const barH = 3;
+    const barX = Math.floor(enemy.x);
+    const barY = Math.floor(enemy.y) - 6;
+    ctx.fillStyle = '#440000';
+    ctx.fillRect(barX, barY, barW, barH);
+    ctx.fillStyle = '#ff2222';
+    ctx.fillRect(barX, barY, barW * (enemy.hp / enemy.maxHp), barH);
   }
 }
 
-export function drawItem(
-  ctx: CanvasRenderingContext2D,
-  item: Item,
-  x: number,
-  y: number,
-): void {
-  const px = x * TILE_SIZE;
-  const py = y * TILE_SIZE;
+export function drawBullet(ctx: CanvasRenderingContext2D, bullet: Bullet) {
+  const x = Math.floor(bullet.x);
+  const y = Math.floor(bullet.y);
 
-  switch (item.effect) {
-    case 'heal':
-      drawPotion(ctx, px, py, '#2d6a4f');
+  switch (bullet.type) {
+    case 'rifle':
+      ctx.fillStyle = bullet.fromPlayer ? '#ffdd44' : '#ff4444';
+      ctx.fillRect(x, y, bullet.width, bullet.height);
       break;
-    case 'strength':
-      drawPotion(ctx, px, py, '#e94560');
+    case 'spread':
+      ctx.fillStyle = '#ff6644';
+      ctx.beginPath();
+      ctx.arc(x + 2, y + 2, 3, 0, Math.PI * 2);
+      ctx.fill();
       break;
-    case 'fireball':
-    case 'teleport':
-      drawScroll(ctx, px, py);
+    case 'laser':
+      ctx.fillStyle = '#00bfff';
+      ctx.shadowColor = '#00bfff';
+      ctx.shadowBlur = 6;
+      ctx.fillRect(x, y, bullet.width + 4, bullet.height);
+      ctx.shadowBlur = 0;
       break;
-    case 'weapon':
-      drawSword(ctx, px, py);
+    case 'machinegun':
+      ctx.fillStyle = '#ffaa00';
+      ctx.fillRect(x, y, bullet.width, bullet.height);
       break;
-    case 'armor':
-      drawArmor(ctx, px, py);
+    case 'flame':
+      ctx.fillStyle = '#ff4400';
+      ctx.globalAlpha = 0.8;
+      ctx.beginPath();
+      ctx.arc(x + 4, y + 4, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffaa00';
+      ctx.beginPath();
+      ctx.arc(x + 4, y + 4, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
       break;
-    default:
-      drawPotion(ctx, px, py, '#2d6a4f');
   }
 }
 
-export function drawPlayerSprite(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-): void {
-  const px = x * TILE_SIZE;
-  const py = y * TILE_SIZE;
-  drawPlayer(ctx, px, py);
+export function drawPickup(ctx: CanvasRenderingContext2D, pickup: Pickup, time: number) {
+  if (pickup.collected) return;
+  const x = Math.floor(pickup.x);
+  const bobY = Math.floor(pickup.y + Math.sin(time * 0.05) * 4);
+
+  ctx.save();
+
+  ctx.fillStyle = '#000';
+  ctx.globalAlpha = 0.3;
+  ctx.fillRect(x + 2, bobY + pickup.height + 2, pickup.width - 4, 4);
+  ctx.globalAlpha = 1;
+
+  switch (pickup.type) {
+    case 'weapon_spread':
+      px(ctx, x + 4, bobY + 2, 12, 16, '#ff6644');
+      px(ctx, x + 6, bobY + 4, 8, 12, '#ff8866');
+      px(ctx, x + 8, bobY + 6, 4, 4, '#fff');
+      break;
+    case 'weapon_laser':
+      px(ctx, x + 4, bobY + 2, 12, 16, '#00bfff');
+      px(ctx, x + 6, bobY + 4, 8, 12, '#44ddff');
+      px(ctx, x + 8, bobY + 6, 4, 4, '#fff');
+      break;
+    case 'weapon_machinegun':
+      px(ctx, x + 4, bobY + 2, 12, 16, '#ffaa00');
+      px(ctx, x + 6, bobY + 4, 8, 12, '#ffcc44');
+      px(ctx, x + 8, bobY + 6, 4, 4, '#fff');
+      break;
+    case 'weapon_flame':
+      px(ctx, x + 4, bobY + 2, 12, 16, '#ff4400');
+      px(ctx, x + 6, bobY + 4, 8, 12, '#ff6622');
+      px(ctx, x + 8, bobY + 6, 4, 4, '#fff');
+      break;
+    case 'health':
+      px(ctx, x + 2, bobY + 4, 16, 12, '#2d6a4f');
+      px(ctx, x + 4, bobY + 6, 12, 8, '#44aa66');
+      px(ctx, x + 8, bobY + 4, 4, 12, '#fff');
+      px(ctx, x + 4, bobY + 8, 12, 4, '#fff');
+      break;
+    case 'shield':
+      px(ctx, x + 4, bobY + 2, 12, 16, '#4fc3f7');
+      px(ctx, x + 6, bobY + 4, 8, 12, '#80deea');
+      px(ctx, x + 8, bobY + 8, 4, 4, '#fff');
+      break;
+    case 'bomb':
+      px(ctx, x + 4, bobY + 2, 12, 16, '#ffd700');
+      px(ctx, x + 6, bobY + 4, 8, 12, '#ffed4a');
+      px(ctx, x + 8, bobY + 6, 4, 4, '#ff4422');
+      break;
+  }
+
+  ctx.restore();
+}
+
+export function drawParticle(ctx: CanvasRenderingContext2D, particle: Particle) {
+  ctx.globalAlpha = particle.life / particle.maxLife;
+  ctx.fillStyle = particle.color;
+  ctx.fillRect(Math.floor(particle.x), Math.floor(particle.y), particle.size, particle.size);
+  ctx.globalAlpha = 1;
 }
