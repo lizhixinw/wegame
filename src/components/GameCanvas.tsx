@@ -1,6 +1,7 @@
 import { useRef, useEffect, useCallback } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { TileType, Player, Enemy, Item, DungeonMap } from '../game/types';
+import { TileType } from '../game/types';
+import { drawCharacter, drawItem, drawPlayerSprite } from '../game/sprites';
 import {
   TILE_SIZE, MAP_WIDTH, MAP_HEIGHT,
   WALL_COLOR, FLOOR_COLOR, CORRIDOR_COLOR, DOOR_COLOR, STAIRS_COLOR,
@@ -33,10 +34,14 @@ function drawTile(
 
     if (tileType === TileType.StairsDown) {
       ctx.fillStyle = '#5a4a1a';
-      ctx.font = `bold ${TILE_SIZE - 4}px monospace`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('>', px + TILE_SIZE / 2, py + TILE_SIZE / 2);
+      ctx.fillRect(px + 2, py + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+      ctx.strokeStyle = '#c9a227';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(px + 6, py + 10);
+      ctx.lineTo(px + 14, py + 4);
+      ctx.lineTo(px + 14, py + 16);
+      ctx.stroke();
     }
     return;
   }
@@ -47,14 +52,15 @@ function drawTile(
       ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
       ctx.fillStyle = '#252545';
       ctx.fillRect(px + 1, py + 1, TILE_SIZE - 2, TILE_SIZE - 2);
+      ctx.fillStyle = '#1a1a35';
+      ctx.fillRect(px + 3, py + 3, TILE_SIZE - 6, TILE_SIZE - 6);
       break;
     case TileType.Floor:
       ctx.fillStyle = FLOOR_COLOR;
       ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
-      if (Math.random() < 0.03) {
-        ctx.fillStyle = '#4a4a6c';
-        ctx.fillRect(px + 6, py + 6, 2, 2);
-      }
+      ctx.fillStyle = '#2a2a4c';
+      ctx.fillRect(px + 4, py + 4, 2, 2);
+      ctx.fillRect(px + 14, py + 12, 2, 2);
       break;
     case TileType.Corridor:
       ctx.fillStyle = CORRIDOR_COLOR;
@@ -63,33 +69,24 @@ function drawTile(
     case TileType.Door:
       ctx.fillStyle = DOOR_COLOR;
       ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
+      ctx.fillStyle = '#5a4a3a';
+      ctx.fillRect(px + 4, py + 2, 4, TILE_SIZE - 4);
+      ctx.fillRect(px + 12, py + 2, 4, TILE_SIZE - 4);
       break;
     case TileType.StairsDown:
       ctx.fillStyle = FLOOR_COLOR;
       ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
       ctx.fillStyle = STAIRS_COLOR;
-      ctx.font = `bold ${TILE_SIZE - 2}px monospace`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('>', px + TILE_SIZE / 2, py + TILE_SIZE / 2);
+      ctx.fillRect(px + 2, py + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+      ctx.strokeStyle = '#0a0a14';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(px + 6, py + 10);
+      ctx.lineTo(px + 14, py + 4);
+      ctx.lineTo(px + 14, py + 16);
+      ctx.stroke();
       break;
   }
-}
-
-function drawEntity(
-  ctx: CanvasRenderingContext2D,
-  symbol: string,
-  color: string,
-  x: number,
-  y: number,
-) {
-  const px = x * TILE_SIZE;
-  const py = y * TILE_SIZE;
-  ctx.fillStyle = color;
-  ctx.font = `bold ${TILE_SIZE - 2}px monospace`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(symbol, px + TILE_SIZE / 2, py + TILE_SIZE / 2);
 }
 
 function drawHealthBar(
@@ -99,16 +96,29 @@ function drawHealthBar(
   hp: number,
   maxHp: number,
 ) {
-  const barWidth = TILE_SIZE - 2;
+  const barWidth = TILE_SIZE - 4;
   const barHeight = 3;
-  const px = x * TILE_SIZE + 1;
+  const px = x * TILE_SIZE + 2;
   const py = y * TILE_SIZE - 4;
-  const ratio = hp / maxHp;
+  const ratio = Math.max(0, hp / maxHp);
 
-  ctx.fillStyle = '#333';
+  ctx.fillStyle = '#1a1a2e';
   ctx.fillRect(px, py, barWidth, barHeight);
   ctx.fillStyle = ratio > 0.5 ? '#2d6a4f' : ratio > 0.25 ? '#c9a227' : '#e94560';
   ctx.fillRect(px, py, barWidth * ratio, barHeight);
+}
+
+function drawChest(
+  ctx: CanvasRenderingContext2D,
+  px: number,
+  py: number,
+) {
+  ctx.fillStyle = '#8B4513';
+  ctx.fillRect(px + 2, py + 6, TILE_SIZE - 4, TILE_SIZE - 6);
+  ctx.fillStyle = '#A0522D';
+  ctx.fillRect(px + 4, py + 8, TILE_SIZE - 8, TILE_SIZE - 12);
+  ctx.fillStyle = '#FFD700';
+  ctx.fillRect(px + 8, py + 10, 4, 4);
 }
 
 export default function GameCanvas() {
@@ -149,16 +159,16 @@ export default function GameCanvas() {
 
     const visibleItems = items.filter(i => !i.picked && map.visible[i.y][i.x]);
     for (const item of visibleItems) {
-      drawEntity(ctx, item.symbol, item.color, item.x, item.y);
+      drawItem(ctx, item, item.x, item.y);
     }
 
     const visibleEnemies = enemies.filter(e => e.hp > 0 && map.visible[e.y][e.x]);
     for (const enemy of visibleEnemies) {
-      drawEntity(ctx, enemy.symbol, enemy.color, enemy.x, enemy.y);
+      drawCharacter(ctx, enemy.type, enemy.x, enemy.y, enemy.isBoss);
       drawHealthBar(ctx, enemy.x, enemy.y, enemy.hp, enemy.maxHp);
     }
 
-    drawEntity(ctx, PLAYER_SYMBOL, PLAYER_COLOR, player.x, player.y);
+    drawPlayerSprite(ctx, player.x, player.y);
 
     ctx.restore();
   }, [player, enemies, items, map]);
