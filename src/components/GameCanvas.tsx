@@ -93,10 +93,11 @@ function initLevel(levelIndex: number, existingPlayer?: Player): GameState {
   };
 }
 
-export default function GameCanvas() {
+export default function GameCanvas({ inputRef: externalInputRef }: { inputRef?: React.MutableRefObject<InputState> }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameStateRef = useRef<GameState | null>(null);
-  const inputRef = useRef<InputState>(createInputState());
+  const internalInputRef = useRef<InputState>(createInputState());
+  const inputRef = externalInputRef || internalInputRef;
   const frameRef = useRef<number>(0);
   const timeRef = useRef<number>(0);
   const updateHUD = useGameStore(s => s.updateHUD);

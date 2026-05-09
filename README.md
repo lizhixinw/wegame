@@ -1,57 +1,136 @@
-# React + TypeScript + Vite
+# 🎮 暗影突击
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> 一款类似魂斗罗的横版射击小游戏，在浏览器里直接玩！
 
-Currently, two official plugins are available:
+你是一名特种兵，要在枪林弹雨中一路向前，打败敌人、收集武器、击败 Boss 通关。
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## 🚀 怎么玩
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 第一步：启动游戏
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+打开终端，依次输入以下命令：
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+然后打开浏览器访问 **http://localhost:5173** 就能看到游戏了！
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 第二步：操作方式
 
-export default tseslint.config({
-  extends: [
-    // other configs...
-    // Enable lint rules for React
-    reactX.configs['recommended-typescript'],
-    // Enable lint rules for React DOM
-    reactDom.configs.recommended,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+| 你想做什么 | 按哪个键 |
+|-----------|---------|
+| 左右移动 | `A` `D` 或 `←` `→` |
+| 跳跃 | `W` `↑` 或 `空格` |
+| 射击 | `Z` |
+| 蹲下 | `S` 或 `↓` |
+| 斜着打 | 按住方向键 + `Z`（比如 `↑`+`Z` 往上打） |
+
+> 📱 手机上玩？屏幕下方有虚拟按钮，左边方向、右边跳跃和射击。
+
+---
+
+## 🗺️ 游戏内容
+
+### 3 个关卡
+
+| 关卡 | 名字 | 长什么样 |
+|------|------|---------|
+| 第 1 关 | 丛林基地 | 绿色丛林，入门难度 |
+| 第 2 关 | 冰雪要塞 | 蓝色冰原，敌人更多 |
+| 第 3 关 | 熔岩工厂 | 红色火山，最难的一关 |
+
+### 5 种武器
+
+路上捡到武器箱就能换武器：
+
+| 武器 | 颜色 | 好用在哪 |
+|------|------|---------|
+| 步枪 | 黄色 | 默认武器，稳定好用 |
+| 散弹枪 | 橙色 | 一次打 5 发，近距离超猛 |
+| 激光枪 | 蓝色 | 能穿透敌人，伤害高 |
+| 机关枪 | 金色 | 射速超快，弹幕压制 |
+| 火焰枪 | 红色 | 伤害最高，一发入魂 |
+
+### 5 种敌人
+
+| 敌人 | 怎么对付 |
+|------|---------|
+| 步兵 🧑‍✈️ | 最普通，走位躲子弹就行 |
+| 炮塔 🔫 | 不会动，但射得快，优先打掉 |
+| 飞行器 ✈️ | 天上飞来飞去，注意抬头 |
+| 坦克 🛡️ | 血厚打不死，多躲多打 |
+| Boss 👹 | 每关结尾出现，血超厚，弹幕密集 |
+
+### 4 种道具
+
+| 道具 | 捡了有什么用 |
+|------|------------|
+| 武器箱 | 换成新武器 |
+| 红十字 | 回一点血 |
+| 蓝盾牌 | 短时间无敌 |
+| 金炸弹 | 炸死屏幕上所有敌人 |
+
+---
+
+## 📋 游戏规则
+
+- 你有 **3 条命**，每条命 **3 格血**
+- 被打掉 1 格血后会短暂无敌（闪烁状态）
+- 血掉光了消耗 1 条命，满血复活
+- 3 条命全没了 → 游戏结束
+- 打败每关最后的 Boss → 进入下一关
+- 最高分会自动保存，下次打开还在
+
+---
+
+## 💻 技术相关
+
+这个游戏用这些技术做的：
+
+- **React 18** + **TypeScript** — 界面框架
+- **Vite 6** — 打包构建
+- **Zustand** — 状态管理
+- **Tailwind CSS** — 样式
+- **Canvas 2D** — 游戏画面渲染
+
+### 项目结构
+
+```
+src/
+├── components/          # 界面组件
+│   ├── GameCanvas.tsx      游戏画面（核心）
+│   ├── HUD.tsx             血条、武器、分数显示
+│   └── TouchControls.tsx   手机触控按钮
+├── game/                # 游戏逻辑
+│   ├── constants.ts        各种数值配置
+│   ├── enemies.ts          敌人行为 AI
+│   ├── input.ts            键盘输入处理
+│   ├── levels.ts           3 个关卡数据
+│   ├── particles.ts        爆炸火花等特效
+│   ├── physics.ts          碰撞检测、重力
+│   ├── renderer.ts         画面渲染
+│   ├── sprites.ts          角色和敌人外观
+│   ├── types.ts            类型定义
+│   └── weapons.ts          武器射击逻辑
+├── pages/               # 页面
+│   ├── Home.tsx            主菜单
+│   ├── Game.tsx            游戏中
+│   └── GameOver.tsx        游戏结束
+├── store/               # 全局状态
+│   └── gameStore.ts        分数、生命等数据
+├── App.tsx              # 应用入口
+├── main.tsx             # 启动文件
+└── index.css            # 全局样式
+```
+
+### 开发命令
+
+```bash
+npm run check    # 检查类型错误
+npm run lint     # 检查代码规范
+npm run build    # 打包上线版本
 ```
